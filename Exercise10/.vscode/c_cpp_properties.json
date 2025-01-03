@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/lib/x86_64-linux-gnu/mpich"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/mpic++",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

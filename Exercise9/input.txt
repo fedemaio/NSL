@@ -1,0 +1,7 @@
+N_cities 34
+steps 1000
+N 200
+p_crossover 0.7
+p_mutate1 0.05
+p_mutate2 0.05
+p_mutate3 0.05

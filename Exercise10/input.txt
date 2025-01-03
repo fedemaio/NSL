@@ -1,0 +1,9 @@
+N_provinces 110
+steps 10000
+N 200
+N_migr 21
+p_crossover 0.8
+p_mutate1 0.1
+p_mutate2 0.1
+p_mutate3 0.1
+communicate TRUE
