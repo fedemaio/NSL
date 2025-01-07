@@ -1,4 +1,4 @@
-#include <mpi.h>
+    #include <mpi.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -131,30 +131,11 @@ int main(int argc, char** argv) {
     population pop(rnd, POP_SIZE, initial_tour, CROSSOVER_RATE, 
                   MUTATION_RATE_1, MUTATION_RATE_2, MUTATION_RATE_3);
     
+    
     // Main GA loop
     for (int gen = 0; gen < GENERATIONS; gen++) {
         // Evolve population
         pop.step();
-        
-        // Migration phase
-        if (gen % MIGRATION_INTERVAL == 0 && gen > 0) {
-            tour best_individual = pop.get_best_tour();
-            best_individual.check();  // Verifica la validità del tour
-            
-            vector<int> send_indices = tour_to_array(best_individual);
-            vector<int> recv_indices(110);
-            
-            int target = (rank + 1) % size;
-            int source = (rank - 1 + size) % size;
-            
-            MPI_Status status;
-            MPI_Sendrecv(send_indices.data(), 110, MPI_INT, target, 0,
-                        recv_indices.data(), 110, MPI_INT, source, 0,
-                        MPI_COMM_WORLD, &status);
-            
-            tour received_tour = array_to_tour(recv_indices, cities);
-            pop.replace_worst_tour(received_tour);
-        }
         
         // Print progress
         if (gen % 10 == 0 && rank == 0) {
@@ -163,35 +144,40 @@ int main(int argc, char** argv) {
             cout << "Generation " << gen << ", Best Length: " << best.path_lenght() << endl;
         }
     }
-    
-    // Final output
+
+    // Final output for each rank
     tour final_best = pop.get_best_tour();
     final_best.check();  // Verifica la validità del tour finale
     double final_length = final_best.path_lenght();
-    
+
+    // Save best tour to file for each process
+    string output_file = "best_tour_coordinates_rank_" + to_string(rank) + ".txt";
+    save_best_tour_to_file(final_best, output_file);
+
+    // Gather final lengths at rank 0
     vector<double> all_lengths(size);
     MPI_Gather(&final_length, 1, MPI_DOUBLE, 
                all_lengths.data(), 1, MPI_DOUBLE, 
                0, MPI_COMM_WORLD);
     
     if (rank == 0) {
-        cout << "\nFinal Results from all continents:" << endl;
+        cout << "\nFinal Results from all processes:" << endl;
         for (int i = 0; i < size; i++) {
-            cout << "Continent " << i << ": " << all_lengths[i] << endl;
+            cout << "Process " << i << ": " << all_lengths[i] << endl;
         }
         
         double best_length = all_lengths[0];
-        int best_continent = 0;
+        int best_process = 0;
         for (int i = 1; i < size; i++) {
             if (all_lengths[i] < best_length) {
                 best_length = all_lengths[i];
-                best_continent = i;
+                best_process = i;
             }
         }
-        cout << "\nBest overall solution found in continent " 
-             << best_continent << " with length " << best_length << endl;
-        
-        // Save best tour to file
+        cout << "\nBest overall solution found by process " 
+             << best_process << " with length " << best_length << endl;
+
+     // Save best tour to file
         save_best_tour_to_file(final_best, "best_tour_coordinates_6.txt");
     }
     

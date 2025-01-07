@@ -49,6 +49,10 @@ void tour :: set_cities(vector<city> c){
 void tour :: set_city(int n, city c){
     _cities[n] = c;
 }
+const std::vector<city>& tour::get_cities() const {
+    return _cities;
+}
+
 
 //returns the ith city
 city tour :: operator[](int i){

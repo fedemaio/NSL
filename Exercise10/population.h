@@ -41,6 +41,7 @@ class population {
     void print();
     tour get_best_tour(); //shortest tour
     double half_AV();
+    void replace_worst_tour(const tour& new_tour);
 };
 
 #endif 

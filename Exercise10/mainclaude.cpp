@@ -1,3 +1,4 @@
+
 #include <mpi.h>
 #include <iostream>
 #include <fstream>
@@ -82,19 +83,6 @@ tour array_to_tour(const vector<int>& arr, const vector<city>& cities) {
     return new_tour;
 }
 
-void save_best_tour_to_file(const tour& best_tour, const string& filename) {
-    ofstream out(filename);
-    if (!out.is_open()) {
-        cerr << "Error: Unable to open file " << filename << " for writing." << endl;
-        return;
-    }
-    for (const auto& city : best_tour.get_cities()) {
-        out << city.x << " " << city.y << endl;
-    }
-    out.close();
-    cout << "Best tour coordinates saved to " << filename << endl;
-}
-
 int main(int argc, char** argv) {
     MPI_Init(&argc, &argv);
     
@@ -103,13 +91,13 @@ int main(int argc, char** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     
     // GA Parameters
-    const int GENERATIONS = 2000;
-    const int POP_SIZE = 200;
+    const int GENERATIONS = 1000;
+    const int POP_SIZE = 50;
     const float CROSSOVER_RATE = 0.7;
     const float MUTATION_RATE_1 = 0.1;
     const float MUTATION_RATE_2 = 0.1;
     const float MUTATION_RATE_3 = 0.1;
-    const int MIGRATION_INTERVAL = 21;
+    const int MIGRATION_INTERVAL = 100;
     
     // Initialize random number generator
     Random rnd;
@@ -190,9 +178,6 @@ int main(int argc, char** argv) {
         }
         cout << "\nBest overall solution found in continent " 
              << best_continent << " with length " << best_length << endl;
-        
-        // Save best tour to file
-        save_best_tour_to_file(final_best, "best_tour_coordinates_6.txt");
     }
     
     MPI_Finalize();

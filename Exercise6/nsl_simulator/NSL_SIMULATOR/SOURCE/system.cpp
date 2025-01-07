@@ -290,6 +290,7 @@ void System :: initialize_properties(){ // Initialize data members used for meas
 
   string property;
   int index_property = 0;
+  //int _index_tenergy_squared = 0;
   _nprop = 0;
 
   _measure_penergy  = false; //Defining which properties will be measured
@@ -372,8 +373,8 @@ void System :: initialize_properties(){ // Initialize data members used for meas
         _nprop++;
         _measure_cv = true;
         _index_cv = index_property;
-        index_property++;
-      } else if( property == "SUSCEPTIBILITY" ){
+        index_property++;    
+      }else if( property == "SUSCEPTIBILITY" ){
         ofstream coutpr("../OUTPUT/susceptibility.dat");
         coutpr << "#     BLOCK:   ACTUAL_X:     X_AVE:       ERROR:" << endl;
         coutpr.close();
@@ -593,13 +594,29 @@ void System :: measure(){ // Measure properties
     
   }
   // SPECIFIC HEAT /////////////////////////////////////////////////////////////
-// TO BE FIXED IN EXERCISE 6 //diverso dal send
-//if (_measure_cv and _measure_tenergy) {
-  //_measurement(_index_cv) = _beta * _beta * (
-    //  pow(tenergy_temp /= double(_npart), 2) - pow(_measurement(_index_tenergy), 2));
- if (_measure_tenergy and _measure_cv) _measurement(_index_cv) = pow(_measurement(_index_tenergy), 2);
-  //cout<<_measurement<<endl; 
-//}
+  // SPECIFIC HEAT /////////////////////////////////////////////////////////////
+if (_measure_cv){
+    double E = 0.0;
+    double E2 = 0.0;
+    
+    // Calcolo diretto dell'energia totale
+    for (int i = 0; i < _npart; i++) {
+        double s_i = double(_particle(i).getspin());
+        double s_j = double(_particle(this->pbc(i+1)).getspin());
+        // Calcolo solo il termine di interazione tra spin vicini
+        double e_i = -_J * s_i * s_j;
+        E += e_i;
+        E2 += e_i * e_i;
+    }
+    
+    // Dividiamo per _npart per avere energie per particella
+    E /= _npart;
+    E2 /= _npart;
+    
+    // Calcolo del calore specifico per particella
+    // Usiamo la formula Cv = β²(⟨E²⟩ - ⟨E⟩²) che dà il calore specifico per particella
+    _measurement(_index_cv) = _beta * _beta * (E2 - E * E);
+}
 
   // SUSCEPTIBILITY ////////////////////////////////////////////////////////////
 // TO BE FIXED IN EXERCISE 6 

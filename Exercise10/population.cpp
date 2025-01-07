@@ -85,56 +85,79 @@ tour population :: get_best_tour(){
 //returns true if the tours are the same (every index is)
 bool population :: _is_same(tour t1, tour t2){
     for(int i=0; i<_num_cities; i++){
-        if(t1[i].index != t2[i].index) return false;
+        //cout << "Comparing city " << i << ": " << t1[i].index << " vs " << t2[i].index << endl;
+        if(t1[i].index != t2[i].index) {
+        //cout <<t1[i].index<<t2[i].index<<endl;
+        //cout << "Difference found at city " << i << ": " << t1[i].index << " != " << t2[i].index << endl;
+        return false;
+        }
     }
+    //cout << "Tours are identical." << endl;
     return true;
 }
 
 //fitness selection function
 tour population :: _select(){
     float P[_num_chrom];
+    double beta = 0.08;
     double total_lenght = 0;
     double L;
     for(int i=0; i<_num_chrom; i++){
         L = _tours[i].path_lenght();
-        P[i] = exp(-L); //the higher prob is the one with the shortest lenght
+        P[i] = exp(-beta*L); //the higher prob is the one with the shortest lenght
         total_lenght += P[i];
+        //cout << "Tour " << i << ", Length: " << L << ", Raw Probability: " << P[i] << endl;
     }
     //normalization
     for(int i=0; i<_num_chrom; i++){
         P[i] /= total_lenght;
+        //cout << "Tour " << i << ", Normalized Probability: " << P[i] << endl;
     }
     double s = P[0];
     int i = 0;
     double prob = _rnd.Rannyu();
+    //cout << "Randomly generated probability: " << prob << endl;
     while(s < prob){ //up to when the ith chrom prob is as big as the random generated one
         i++;
         s += P[i];
+        //cout << "Cumulative Probability at index " << i << ": " << s << endl;
     }
+    //cout << "Selected tour index: " << i << endl;
+    //cout<< _tours[i][i+1].index <<endl;
     return _tours[i];
+    
 }
 
 //it works for an even number of chromosomes
 //generates a new population from the old one
 void population :: step(){
     vector<tour> offspring;
+
     for(int i=0; i<_num_chrom/2; i++){ //couples chromosomes
         //adds two chrom from current population to offspring
         offspring.push_back(this->_select());
         offspring.push_back(this->_select());
+       
         //check if those selected are the same and eventually it chooses another one
         while(this->_is_same(offspring[2*i], offspring[2*i+1])){
+            //cout<<"cerca5"<<endl;
             offspring.pop_back();
+            //cout<<"cerca6"<<endl;
             offspring.push_back(this->_select());
+            //cout<<"cerca7"<<endl;
         }
         //performs crossover and mutation on the new popolation
         if(_rnd.Rannyu() < _p_c) this->_crossover(offspring[2*i], offspring[2*i+1]);
+        //cout<<"cerca8"<<endl;
         if(_rnd.Rannyu() < _p_m_1) this->_mutate_1(offspring[2*i]);
         if(_rnd.Rannyu() < _p_m_1) this->_mutate_1(offspring[2*i+1]);
+        //cout<<"cerca9"<<endl;
         if(_rnd.Rannyu() < _p_m_2) this->_mutate_2(offspring[2*i]);
         if(_rnd.Rannyu() < _p_m_2) this->_mutate_2(offspring[2*i+1]);
+        //cout<<"cerca10"<<endl;
         if(_rnd.Rannyu() < _p_m_3) this->_mutate_3(offspring[2*i]);
         if(_rnd.Rannyu() < _p_m_3) this->_mutate_3(offspring[2*i+1]);
+        //cout<<"cerca11"<<endl;
     }
     _tours = offspring; //updates population
 }
@@ -232,6 +255,21 @@ double population :: half_AV(){
     }
     return sum / (_num_chrom/2);
 }
+
+void population::replace_worst_tour(const tour& new_tour) {
+    int worst_index = 0;
+    double max_length = _tours[0].path_lenght();
+    
+    for (int i = 1; i < _num_chrom; i++) {
+        if (_tours[i].path_lenght() > max_length) {
+            max_length = _tours[i].path_lenght();
+            worst_index = i;
+        }
+    }
+    _tours[worst_index] = new_tour;
+}
+
+
 /****************************************************************
 *****************************************************************
     _/    _/  _/_/_/  _/       Numerical Simulation Laboratory

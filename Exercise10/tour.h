@@ -38,6 +38,8 @@ class tour {
 
     void set_cities(vector<city>);
     void set_city(int, city);
+    const vector<city>& get_cities() const;
+
 
     city operator[](int); //operatore che ritorna l'i-esima città del tour
     int get_num_cities();
@@ -47,6 +49,7 @@ class tour {
     //added in ex 10
     vector<int> serialize();
     void deserialize(const vector<int>&);
+
     
 };
 
